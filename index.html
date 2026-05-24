@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IMS</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand">
+          <img class="brand-logo" src="assets/logo.png" alt="Rizviz International Impex logo" />
+          <div class="brand-copy">
+            <strong>IMS</strong>
+            <small>Rizviz International Impex</small>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item active" data-view="dashboard">Dashboard</button>
+          <button class="nav-item admin-only" data-view="interviews">Add Interview</button>
+          <button class="nav-item" data-view="history">All Interviews</button>
+          <button class="nav-item" data-view="rounds">All Rounds</button>
+          <button class="nav-item" data-view="chats">Interview Chats</button>
+          <button class="nav-item" data-view="admin">Admin</button>
+        </nav>
+
+        <div class="user-switcher">
+          <label for="activeUser">Viewing as</label>
+          <select id="activeUser"></select>
+          <span id="rolePill" class="pill">Admin</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div>
+            <h1>Interview Managment System</h1>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" id="seedButton" type="button">Reset demo data</button>
+            <div class="profile-menu-wrap">
+              <button class="profile-button" id="profileButton" type="button" aria-expanded="false">
+                <span id="profileInitials">A</span>
+              </button>
+              <div class="profile-menu hidden" id="profileMenu">
+                <div class="profile-summary">
+                  <strong id="profileMenuName">Admin</strong>
+                  <span id="profileMenuRole">Admin</span>
+                </div>
+                <button class="ghost-button full-width admin-only" id="profileAddInterviewButton" type="button">Add interview</button>
+                <button class="ghost-button full-width" id="viewAccountButton" type="button">View account</button>
+                <button class="ghost-button full-width" id="accountThemeButton" type="button">Switch theme</button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="search-strip">
+          <label class="search-box" for="globalSearch">
+            <span>Search</span>
+            <input id="globalSearch" type="search" placeholder="Company, staffing firm, interviewer, profile, feedback..." />
+          </label>
+          <label class="admin-only">
+            <span>User</span>
+            <select id="userFilter">
+              <option value="all">All users</option>
+            </select>
+          </label>
+          <label>
+            <span>Range</span>
+            <select id="rangeFilter">
+              <option value="all">All time</option>
+              <option value="today">Today</option>
+              <option value="tomorrow">Tomorrow</option>
+              <option value="week">This week</option>
+              <option value="month" selected>This month</option>
+              <option value="year">This year</option>
+              <option value="upcoming">Upcoming</option>
+            </select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select id="statusFilter">
+              <option value="all">All</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="Completed">Completed</option>
+              <option value="Offer">Offer</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="view active" id="dashboardView" aria-label="Dashboard">
+          <div class="metric-grid" id="metricGrid"></div>
+        </section>
+
+        <section class="view" id="interviewsView" aria-label="Add Interview">
+          <section class="panel admin-only">
+            <div class="panel-header">
+              <h2>Add Interview</h2>
+              <span class="muted">Choose how you want to create the interview</span>
+            </div>
+            <div class="choice-grid" id="interviewChoiceGrid">
+              <button class="choice-card" type="button" id="chooseNewInterview">
+                <strong>Add new interview</strong>
+                <span>Create a fresh company or staffing-firm interview.</span>
+              </button>
+              <button class="choice-card" type="button" id="chooseExistingRound">
+                <strong>Add round to an existing interview</strong>
+                <span>Pick an existing company group and continue the round count.</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="panel admin-only hidden" id="roundPickerPanel">
+            <div class="panel-header">
+              <h2>Select existing interview</h2>
+              <button class="ghost-button compact" id="cancelRoundPicker" type="button">Cancel</button>
+            </div>
+            <section class="round-filter-grid">
+              <label>
+                <span>Search existing interviews</span>
+                <input id="roundSearch" type="search" placeholder="Company, profile, staffing firm, assigned user..." />
+              </label>
+              <label>
+                <span>User</span>
+                <select id="roundUserFilter">
+                  <option value="all">All users</option>
+                </select>
+              </label>
+            </section>
+            <div class="record-list" id="roundPickerList"></div>
+          </section>
+
+          <div class="single-column">
+            <section class="panel form-panel admin-only hidden" id="interviewFormPanel">
+              <div class="panel-header">
+                <h2 id="formTitle">Add interview</h2>
+                <button class="ghost-button compact" id="clearFormButton" type="button">Clear</button>
+              </div>
+              <form id="interviewForm">
+                <input type="hidden" id="interviewId" />
+                <div class="form-grid">
+                  <label>
+                    <span>Assign to user</span>
+                    <div class="combo-box">
+                      <input id="ownerSearch" placeholder="None" autocomplete="off" required />
+                      <div class="combo-results hidden" id="ownerResults"></div>
+                    </div>
+                    <select id="ownerId" required></select>
+                  </label>
+                  <label>
+                    <span>Profile</span>
+                    <input id="profileName" required placeholder="Enter profile owner name here" />
+                  </label>
+                  <label>
+                    <span>Company</span>
+                    <input id="companyName" required placeholder="Enter name of company" />
+                  </label>
+                  <label>
+                    <span>Staffing firm</span>
+                    <input id="staffingFirm" placeholder="Enter Staffing firm/Recruiting company if any" />
+                  </label>
+                  <label>
+                    <span>Date and time EST</span>
+                    <input id="interviewAt" type="datetime-local" required />
+                  </label>
+                  <label>
+                    <span>Round</span>
+                    <input id="roundNumber" type="number" min="1" value="1" required />
+                  </label>
+                  <label>
+                    <span>Status</span>
+                    <select id="interviewStatus">
+                      <option>Scheduled</option>
+                      <option>Completed</option>
+                      <option>Offer</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>WhatsApp</span>
+                    <input id="whatsappNumber" placeholder="+15551234567" readonly />
+                  </label>
+                  <label>
+                    <span>Interview link</span>
+                    <input id="interviewLink" type="url" placeholder="example: http://meet.google.com/...." required />
+                  </label>
+                  <label>
+                    <span>Resume / attachment</span>
+                    <input id="attachmentFile" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required />
+                  </label>
+                </div>
+                <div class="attachment-preview hidden" id="attachmentPreview"></div>
+                <label>
+                  <span>Interviewers</span>
+                  <input id="interviewers" placeholder="example: John Smith, Sarah Lee, Walli Ullah" />
+                </label>
+                <label id="feedbackField">
+                  <span>Feedback</span>
+                  <textarea id="feedback" rows="6" placeholder="Questions asked, performance notes, and outcome details..."></textarea>
+                </label>
+                <div class="duplicate-warning hidden" id="duplicateWarning"></div>
+                <button class="primary-button full-width" type="submit">Save interview</button>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="historyView" aria-label="All Interviews">
+          <section class="panel hidden" id="offerFormPanel">
+            <div class="panel-header">
+              <h2>Received offer</h2>
+              <button class="ghost-button compact" id="cancelOfferButton" type="button">Cancel</button>
+            </div>
+            <form id="offerForm" class="stacked-form">
+              <label>
+                <span>Position</span>
+                <input id="offerPosition" placeholder="Enter position title" required />
+              </label>
+              <label>
+                <span>Start date</span>
+                <input id="offerStartDate" type="date" required />
+              </label>
+              <button class="primary-button" type="submit" id="saveOfferButton">Save offer</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-header">
+              <h2 id="historyTitle">All Interviews</h2>
+              <div class="record-actions">
+                <span class="muted" id="historyHint">Rounds, feedback, staffing firm, and interviewers</span>
+                <button class="ghost-button compact" id="exportHistoryButton" type="button">Export filtered CSV</button>
+                <button class="ghost-button compact hidden" id="clearHistoryGroupButton" type="button">Show all</button>
+              </div>
+            </div>
+            <div class="history-list" id="historyList"></div>
+          </section>
+        </section>
+
+        <section class="view" id="roundsView" aria-label="All Rounds">
+          <section class="panel">
+            <div class="panel-header">
+              <h2>All Rounds</h2>
+              <button class="ghost-button compact" id="exportRoundsButton" type="button">Export filtered CSV</button>
+            </div>
+            <section class="round-filter-grid">
+              <label class="admin-only">
+                <span>Assigned to</span>
+                <select id="roundsUserFilter">
+                  <option value="all">All users</option>
+                </select>
+              </label>
+              <label>
+                <span>Month</span>
+                <select id="roundsMonthFilter"></select>
+              </label>
+              <label>
+                <span>Year</span>
+                <select id="roundsYearFilter"></select>
+              </label>
+            </section>
+            <article class="metric rounds-score">
+              <span class="muted">Total completed rounds</span>
+              <strong id="roundsTotal">0</strong>
+            </article>
+            <div class="record-list" id="roundsList"></div>
+          </section>
+        </section>
+
+        <section class="view" id="adminView" aria-label="Admin">
+          <div class="single-column">
+            <section class="panel">
+              <div class="panel-header">
+                <h2>Admin</h2>
+                <span class="muted">Manage users and account access</span>
+              </div>
+              <div class="choice-grid admin-choice-grid">
+                <button class="choice-card" type="button" id="addNewUserButton">
+                  <strong>Add new user</strong>
+                  <span>Create a user with name, username, email, and WhatsApp.</span>
+                </button>
+                <button class="choice-card" type="button" id="viewUsersButton">
+                  <strong>View all users</strong>
+                  <span>Search, edit, or delete existing users.</span>
+                </button>
+              </div>
+            </section>
+            <section class="panel hidden" id="userFormPanel">
+              <div class="panel-header">
+                <h2 id="userFormTitle">Add user</h2>
+                <button class="ghost-button compact" id="hideUserFormButton" type="button">Hide form</button>
+              </div>
+              <form id="userForm" class="stacked-form">
+                <input id="userId" type="hidden" />
+                <label>
+                  <span>Name</span>
+                  <input id="userName" placeholder="User name" required />
+                </label>
+                <label>
+                  <span>Username</span>
+                  <input id="userUsername" placeholder="Username" required />
+                </label>
+                <label>
+                  <span>Email</span>
+                  <input id="userEmail" type="email" placeholder="Email" />
+                </label>
+                <label>
+                  <span>WhatsApp number</span>
+                  <input id="userPhone" placeholder="WhatsApp number" />
+                </label>
+                <button class="primary-button" type="submit" id="saveUserButton">Add user</button>
+                <button class="ghost-button" type="button" id="clearUserButton">Clear</button>
+              </form>
+            </section>
+            <section class="panel hidden" id="usersListPanel">
+              <div class="panel-header">
+                <h2>All users</h2>
+                <button class="ghost-button compact" id="hideUsersButton" type="button">Hide users</button>
+              </div>
+              <label class="search-box user-list-search" for="userSearch">
+                <span>Search users</span>
+                <input id="userSearch" type="search" placeholder="Name, username, email, WhatsApp, or user ID..." />
+              </label>
+              <div class="record-list" id="userList"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="chatsView" aria-label="Interview Chats">
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Interview chats</h2>
+              <span class="muted">Open a conversation for any interview</span>
+            </div>
+            <div class="record-list" id="chatList"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="detail-modal hidden" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div class="detail-panel">
+        <div class="panel-header">
+          <h2 id="detailTitle">Round details</h2>
+          <button class="ghost-button compact" id="closeDetailButton" type="button">Close</button>
+        </div>
+        <div id="detailBody"></div>
+      </div>
+    </div>
+    <div class="detail-modal hidden" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="detail-panel confirm-panel">
+        <div class="panel-header">
+          <h2 id="confirmTitle">Confirm action</h2>
+        </div>
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="record-actions">
+          <button class="danger-button small-button" id="confirmYesButton" type="button">Confirm</button>
+          <button class="ghost-button small-button" id="confirmNoButton" type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div class="detail-modal hidden" id="chatModal" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+      <div class="detail-panel confirm-panel">
+        <div class="panel-header">
+          <h2 id="chatTitle">Interview chat</h2>
+          <button class="ghost-button compact" id="closeChatButton" type="button">Close</button>
+        </div>
+        <div class="chat-thread" id="chatMessages"></div>
+        <label>
+          <span>Message</span>
+          <textarea id="chatText" rows="4" placeholder="Write a message..."></textarea>
+        </label>
+        <div class="record-actions">
+          <button class="primary-button" id="sendChatButton" type="button">Send message</button>
+        </div>
+      </div>
+    </div>
+    <div class="detail-modal hidden" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+      <div class="detail-panel confirm-panel">
+        <div class="panel-header">
+          <h2 id="completionTitle">Complete interview</h2>
+          <button class="ghost-button compact" id="closeCompletionButton" type="button">Close</button>
+        </div>
+        <label>
+          <span>Feedback</span>
+          <textarea id="completionFeedback" rows="6" placeholder="Enter interview feedback before marking it completed..."></textarea>
+        </label>
+        <div class="record-actions">
+          <button class="primary-button" id="saveCompletionButton" type="button">Mark completed</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast hidden" id="toast" role="status"></div>
+    <script src="app-core.js"></script>
+    <script src="app-dashboard.js"></script>
+    <script src="app-actions.js"></script>
+    <script src="app-export.js"></script>
+    <script src="app-events.js"></script>
+  </body>
+</html>
